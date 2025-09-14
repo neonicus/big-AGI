@@ -5,6 +5,9 @@ import { NextResponse } from 'next/server';
 const authUsername = process.env.AUTH_USERNAME;
 const authPassword = process.env.AUTH_PASSWORD;
 
+// Define protected paths outside the middleware function
+const protectedPaths = ["/dashboard", "/admin/*"];
+
 // Function to decode the Basic Auth header
 const decodeBasicAuth = (authHeader) => {
   if (!authHeader) return null;
@@ -20,9 +23,6 @@ const decodeBasicAuth = (authHeader) => {
 
 export async function middleware(req) {
   const url = req.nextUrl;
-
-  // Define the paths where authentication is required
-  const protectedPaths = ["/dashboard", "/admin/*"];
 
   // Check if the request is for a protected path
   if (protectedPaths.some(path => url.pathname.startsWith(path))) {
