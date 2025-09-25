@@ -158,6 +158,15 @@ export const DModelParameterRegistry = {
     initialValue: false,
   } as const,
 
+  llmVndOaiImageGeneration: {
+    label: 'Image Generation',
+    type: 'enum' as const,
+    description: 'Image generation mode and quality',
+    values: ['mq', 'hq', 'hq_edit' /* precise input editing */, 'hq_png' /* uncompressed */] as const,
+    // No initialValue - defaults to undefined (off)
+    // No requiredFallback - this is optional
+  } as const,
+
   // Perplexity-specific parameters
 
   // llmVndPerplexityReasoningEffort - we reuse the OpenAI reasoning effort parameter
