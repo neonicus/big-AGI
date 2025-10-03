@@ -150,9 +150,7 @@ export function AutoBlocksRenderer(props: {
             const RenderCodeMemoOrNot = renderCodeMemoOrNot(optimizeMemoBeforeLastBlock);
 
             // Custom handling for some of our blocks
-            const disableBecauseInProgress = bkInput.isPartial && props.optiAllowSubBlocksMemo === true;
-            const disableBecauseTooShort = !bkInput.title && bkInput.lines <= 3;
-            let disableEnhancedRender = disableBecauseInProgress || disableBecauseTooShort;
+            let disableEnhancedRender = bkInput.isPartial || (!bkInput.title && bkInput.lines <= 3);
             let enhancedStartCollapsed = false;
 
             return (props.codeRenderVariant === 'enhanced' && !disableEnhancedRender) ? (

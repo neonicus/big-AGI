@@ -96,13 +96,6 @@ export function aixToGeminiGenerateContent(model: AixAPI_Model, _chatGenerate: A
     payload.generationConfig!.thinkingConfig = thinkingConfig;
   }
 
-  // [Gemini, 2025-10-02] Image generation: aspect ratio configuration
-  if (model.vndGeminiAspectRatio) {
-    payload.generationConfig!.imageConfig = {
-      aspectRatio: model.vndGeminiAspectRatio,
-    };
-  }
-
   // [Gemini, 2025-05-20] Experimental Audio generation (TTS - audio only, no text): Request
   const noTextOutput = !model.acceptsOutputs.includes('text');
   if (model.acceptsOutputs.includes('audio')) {
@@ -341,12 +334,6 @@ function _toGeminiTools(itds: AixTools_ToolDefinition[]): NonNullable<TRequest['
           },
         });
         break;
-
-      case 'vnd.ant.tools.bash_20241022':
-      case 'vnd.ant.tools.computer_20241022':
-      case 'vnd.ant.tools.text_editor_20241022':
-      default: // Note: Gemini's tool function doesn't break on unknown tools, so we need the default case here
-        throw new Error('Tool ${itd.type} is not supported by Gemini');
 
     }
   });

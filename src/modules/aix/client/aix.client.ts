@@ -49,7 +49,7 @@ export function aixCreateModelFromLLMOptions(
   const {
     llmRef, llmTemperature, llmResponseTokens, llmTopP, llmForceNoStream,
     llmVndAntThinkingBudget,
-    llmVndGeminiAspectRatio, llmVndGeminiShowThoughts, llmVndGeminiThinkingBudget,
+    llmVndGeminiShowThoughts, llmVndGeminiThinkingBudget,
     llmVndOaiReasoningEffort, llmVndOaiReasoningEffort4, llmVndOaiRestoreMarkdown, llmVndOaiVerbosity, llmVndOaiWebSearchContext, llmVndOaiWebSearchGeolocation, llmVndOaiImageGeneration,
     llmVndPerplexityDateFilter, llmVndPerplexitySearchMode,
     llmVndXaiSearchMode, llmVndXaiSearchSources, llmVndXaiSearchDateFilter,
@@ -101,7 +101,6 @@ export function aixCreateModelFromLLMOptions(
     ...(llmTopP !== undefined ? { topP: llmTopP } : {}),
     ...(llmForceNoStream ? { forceNoStream: llmForceNoStream } : {}),
     ...(llmVndAntThinkingBudget !== undefined ? { vndAntThinkingBudget: llmVndAntThinkingBudget } : {}),
-    ...(llmVndGeminiAspectRatio ? { vndGeminiAspectRatio: llmVndGeminiAspectRatio } : {}),
     ...(llmVndGeminiShowThoughts ? { vndGeminiShowThoughts: llmVndGeminiShowThoughts } : {}),
     ...(llmVndGeminiThinkingBudget !== undefined ? { vndGeminiThinkingBudget: llmVndGeminiThinkingBudget } : {}),
     ...(llmVndOaiResponsesAPI ? { vndOaiResponsesAPI: true } : {}),
@@ -628,7 +627,7 @@ async function _aixChatGenerateContent_LL(
 
   /**
    * DEBUG note: early we were filtering (aixContext.name === 'conversation'), but with the new debugger we don't
-   * - AIX inspector is now independent from sudo mode
+   * - 'sudo' mode is enabled by the UX Labs, and activates debug
    * - every request thereafter both sends back the Aix server-side dispatch packet, and appends all the particles received by the client side
    */
   const requestServerDebugging = getLabsDevMode();
@@ -669,8 +668,7 @@ async function _aixChatGenerateContent_LL(
           debugDispatchRequest: true,
           /**
            * Request profiling data for a successful call (only streaming for now).
-           * Requires debugDispatchRequest to be true as well.
-           * Note: the server-side won't enable profiling on production builds.
+           * Note: the server-side won't enable profiling on non-production builds.
            */
           debugProfilePerformance: true,
         },

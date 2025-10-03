@@ -6,29 +6,6 @@ import type { ModelDescriptionSchema } from '../../llm.server.types';
 import { fromManualMapping, ManualMappings } from './models.data';
 
 
-// OpenAI Model Variants
-export const hardcodedOpenAIVariants: { [modelId: string]: Partial<ModelDescriptionSchema> } = {
-
-  // GPT-5 with web search enabled by default
-  // 'gpt-5-2025-08-07': {
-  //   idVariant: 'search',
-  //   label: 'GPT-5 + Search',
-  //   description: 'GPT-5 with web search enabled by default for up-to-date information and research.',
-  //   parameterSpecs: [
-  //     // customize this param
-  //     { paramId: 'llmVndOaiWebSearchContext', initialValue: 'medium', hidden: true }, // Search enabled by default
-  //     // copy other params
-  //     { paramId: 'llmVndOaiReasoningEffort4' },
-  //     { paramId: 'llmVndOaiRestoreMarkdown' },
-  //     { paramId: 'llmVndOaiVerbosity' },
-  //     { paramId: 'llmVndOaiImageGeneration' },
-  //   ],
-  //   benchmark: { cbaElo: 1442 + 1 }, // +1 from base GPT-5
-  // },
-
-} as const;
-
-
 // configuration
 const DEV_DEBUG_OPENAI_MODELS = false; // set to true to check superfluous and missing models
 
@@ -88,24 +65,6 @@ export const _knownOpenAIChatModels: ManualMappings = [
     interfaces: [LLM_IF_OAI_Chat, LLM_IF_OAI_Vision, LLM_IF_OAI_Responses, LLM_IF_OAI_PromptCaching],
     chatPrice: { input: 1.25, cache: { cType: 'oai-ac', read: 0.125 }, output: 10 },
     benchmark: { cbaElo: 1430 }, // gpt-5-chat
-  },
-
-  // GPT-5 Codex
-  {
-    idPrefix: 'gpt-5-codex',
-    label: 'GPT-5 Codex',
-    description: 'A version of GPT-5 optimized for agentic coding in Codex.',
-    contextWindow: 400000,
-    maxCompletionTokens: 128000,
-    trainingDataCutoff: 'Sep 30, 2024',
-    interfaces: [LLM_IF_OAI_Chat, LLM_IF_OAI_Vision, LLM_IF_OAI_Fn, LLM_IF_OAI_Json, LLM_IF_OAI_Reasoning, LLM_IF_OAI_Responses, LLM_IF_OAI_PromptCaching, LLM_IF_Tools_WebSearch, LLM_IF_HOTFIX_NoTemperature],
-    parameterSpecs: [
-      { paramId: 'llmVndOaiReasoningEffort' }, // works
-      { paramId: 'llmVndOaiWebSearchContext' }, // works, although is not triggered often
-      // { paramId: 'llmVndOaiRestoreMarkdown', initialValue: false }, // since this is for code, let the prompt dictate markdown usage rather than us injecting
-    ],
-    chatPrice: { input: 1.25, cache: { cType: 'oai-ac', read: 0.125 }, output: 10 },
-    // benchmark: TBD
   },
 
   // GPT-5 mini
@@ -1061,7 +1020,6 @@ const _manualOrderingIdPrefixes = [
   'gpt-5-mini-20',
   'gpt-5-nano-20',
   'gpt-5-chat-latest',
-  'gpt-5-codex',
   'gpt-5-',
   // Reasoning models
   'o5-20',
@@ -1158,27 +1116,6 @@ export function openAISortModels(a: ModelDescriptionSchema, b: ModelDescriptionS
 
 
 /**
- * Inject model variants into the models array.
- * Similar to how Anthropic handles variants (e.g., thinking variants),
- * this allows creating specialized versions of models with different defaults.
- */
-export function openAIInjectVariants(models: ModelDescriptionSchema[], model: ModelDescriptionSchema): ModelDescriptionSchema[] {
-
-  // Add variant first (if defined), then the base model
-  if (hardcodedOpenAIVariants[model.id])
-    models.push({
-      ...model,
-      ...hardcodedOpenAIVariants[model.id],
-    });
-
-  // Add the base model
-  models.push(model);
-
-  return models;
-}
-
-
-/**
  * Checks for both superfluous and missing models in OpenAI API.
  * 
  * Combines the functionality of checking for models in our editorial definitions
@@ -1213,10 +1150,10 @@ export function openaiDevCheckForModelsOverlap_DEV(wireModels: unknown, parsedMo
     // 2. Check for missing models (in API but not in our definitions)
     const parsedModelIds = parsedModels.map((model: any) => model.id);
     const missingModelIds = apiModelIds.filter((id: string) => !parsedModelIds.includes(id));
-
+    
     if (missingModelIds.length > 0) {
       // Split missing models: filtered out vs truly missing
-      const filteredOutModels = missingModelIds.filter((id: string) =>
+      const filteredOutModels = missingModelIds.filter((id: string) => 
         openAIModelsDenyList.some(deny => id.includes(deny))
       );
       const trulyMissingModels = missingModelIds.filter((id: string) =>
@@ -1225,7 +1162,7 @@ export function openaiDevCheckForModelsOverlap_DEV(wireModels: unknown, parsedMo
 
       if (filteredOutModels.length > 0)
         console.warn(`[DEV] OpenAI: filtered out models: [\n  - ${filteredOutModels.join('\n  - ')}\n]`);
-
+      
       if (trulyMissingModels.length > 0)
         console.warn(`[DEV] OpenAI: truly missing model definitions[\n  - ${trulyMissingModels.join('\n  - ')}\n]`);
     }

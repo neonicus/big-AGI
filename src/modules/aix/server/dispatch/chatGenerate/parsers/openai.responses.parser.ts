@@ -169,17 +169,10 @@ class ResponseParserStateMachine {
   summaryPartEnter(label: TEventType, outputIndex: number, summaryIndex: number) {
     this.outputItemVisit(label, outputIndex, 'reasoning');
     const previousIndex = summaryIndex === 0 ? undefined : summaryIndex - 1;
-
-    // allow re-entering the same index (there are multiple .added events for the same summary_index)
-    const allowedIndices = [previousIndex, summaryIndex];
-    if (!allowedIndices.includes(this.#summaryIndex))
-      console.warn(`[DEV] AIX: ${label} - summary index mismatch: expected ${previousIndex} or ${summaryIndex}, got ${this.#summaryIndex}`);
-
-    // add spacer when entering a new index, OR when re-entering same index
-    const isReenteringSameIndex = this.#summaryIndex === summaryIndex;
-
+    if (this.#summaryIndex !== previousIndex)
+      console.warn(`[DEV] AIX: ${label} - summary index mismatch: expected ${previousIndex}, got ${this.#summaryIndex}`);
     this.#summaryIndex = summaryIndex;
-    this.#summaryAddSpacer = summaryIndex > 0 || isReenteringSameIndex;
+    this.#summaryAddSpacer = summaryIndex > 0;
   }
 
   summaryPartExit(label: TEventType, outputIndex: number, summaryIndex: number) {
