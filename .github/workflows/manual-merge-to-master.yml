@@ -1,0 +1,51 @@
+name: 2. Manual Merge v2-dev to Master (For Deploy)
+
+on:
+  workflow_dispatch: # ต้องกดปุ่ม 'Run workflow' ด้วยตนเองเท่านั้น
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # จำเป็นสำหรับการ push กลับไปยัง master ของคุณ
+
+    steps:
+      - name: Checkout your master branch (Target)
+        uses: actions/checkout@v4
+        with:
+          ref: master # เราจะทำงานบนสาขา master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+      - name: Ensure v2-dev is up-to-date (Optional but safe)
+        run: |
+          git fetch origin v2-dev
+          
+      - name: Merge v2-dev into master
+        run: |
+          git checkout master
+          
+          # Merge จาก v2-dev เข้ามาที่ master
+          # --no-ff เพื่อให้เกิด Merge Commit ชัดเจน
+          git merge v2-dev --no-ff
+          
+      - name: Check for Merge Conflicts
+        id: check_conflict
+        run: |
+          if git diff --quiet; then
+            echo "merge_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "merge_status=conflict" >> $GITHUB_OUTPUT
+            echo "::error::Merge conflict detected when merging v2-dev to master! Please resolve manually."
+            exit 1 # หยุด Workflow หากมี Conflict
+          fi
+
+      - name: Push merged changes to master
+        if: steps.check_conflict.outputs.merge_status == 'success'
+        run: |
+          echo "Pushing merged changes to origin/master for Vercel deployment..."
+          git push origin master
