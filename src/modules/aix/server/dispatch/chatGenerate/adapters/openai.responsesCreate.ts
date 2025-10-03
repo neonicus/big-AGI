@@ -81,6 +81,7 @@ export function aixToOpenAIResponses(openAIDialect: OpenAIDialects, model: AixAP
     stream: streaming,
     // background: false, // response if unset: false
     truncation: !hotFixNoTruncateAuto ? OPENAI_RESPONSES_DEFAULT_TRUNCATION : 'auto',
+    // include: [], // we incrementally build this below, on-demand
     // user: undefined,
 
   };
@@ -123,6 +124,8 @@ export function aixToOpenAIResponses(openAIDialect: OpenAIDialects, model: AixAP
       // Web search is not supported when the reasoning effort is 'minimal'
       // console.log('[DEV] OpenAI Responses: skipping web search tool due to reasoning effort being set to minimal');
     } else {
+
+      // Add the web search tool to the request
       if (!payload.tools?.length)
         payload.tools = [];
       const webSearchTool: TRequestTool = {
@@ -134,6 +137,37 @@ export function aixToOpenAIResponses(openAIDialect: OpenAIDialects, model: AixAP
         },
       };
       payload.tools.push(webSearchTool);
+
+      // Include all sources (web search list of URLs, but not high quality links at all) in the response ('web_search_call.action.sources')
+      const extendedInclude = new Set(payload.include);
+      extendedInclude.add('web_search_call.action.sources');
+      payload.include = Array.from(extendedInclude);
+
+    }
+  }
+
+  // Tool: Image Generation: configurable per model
+  const requestImageGenerationTool = !!model.vndOaiImageGeneration;
+  if (requestImageGenerationTool) {
+    if (isDialectAzure) {
+      // Azure OpenAI may not support image generation tool yet
+      console.log('[DEV] Azure OpenAI Responses: skipping image generation tool due to Azure limitations');
+    } else {
+      // Add the image generation tool to the request
+      if (!payload.tools?.length)
+        payload.tools = [];
+
+      // Map enum values to tool configuration
+      const imageMode = model.vndOaiImageGeneration;
+      const imageGenerationTool: Extract<TRequestTool, { type: 'image_generation' }> = {
+        type: 'image_generation',
+        ...(imageMode === 'mq' ? { quality: 'medium' } : { /* quality: 'high' -- auto */ }),
+        // ...(imageMode === 'hq' ? ... auto ... ),
+        ...(imageMode === 'hq_edit' && { input_fidelity: 'high' }),
+        ...(imageMode !== 'hq_png' && { output_format: 'webp' }),
+        moderation: 'low',
+      };
+      payload.tools.push(imageGenerationTool);
     }
   }
 
@@ -444,6 +478,11 @@ function _toOpenAIResponsesTools(itds: AixTools_ToolDefinition[]): NonNullable<T
 
       case 'code_execution':
         throw new Error('Gemini code interpreter is not supported');
+
+      case 'vnd.ant.tools.bash_20241022':
+      case 'vnd.ant.tools.computer_20241022':
+      case 'vnd.ant.tools.text_editor_20241022':
+        throw new Error('Different Vendor Tools are not supported by OpenAI');
 
       default:
         // const _exhaustiveCheck: never = itdType;
