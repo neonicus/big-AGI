@@ -1,4 +1,4 @@
-name: 2. Manual Merge v2-dev to Master (For Deploy)
+name: 2. Manual Merge v2-dev to Master (For Deploy) - Forcing v2-dev Wins
 
 on:
   workflow_dispatch: # ต้องกดปุ่ม 'Run workflow' ด้วยตนเองเท่านั้น
@@ -29,25 +29,27 @@ jobs:
           git fetch upstream
           git fetch origin # ดึงข้อมูลสาขาล่าสุดจาก Fork ของเราเอง (รวมถึง v2-dev)
 
-      - name: Merge origin/v2-dev into master
+      - name: Merge origin/v2-dev into master (Forcing v2-dev Wins)
         run: |
           git checkout master
           
-          # 2. สั่ง Merge โดยดึงการเปลี่ยนแปลงจาก 'origin/v2-dev' (v2-dev ของคุณ) เข้ามาใน 'master'
-          # ใช้ --no-ff เพื่อให้เกิด Merge Commit ชัดเจน
-          echo "Attempting to merge origin/v2-dev into master..."
-          git merge origin/v2-dev --no-ff --allow-unrelated-histories || true
+          # 2. สั่ง Merge โดยใช้กลยุทธ์ 'theirs' เพื่อให้โค้ดจาก origin/v2-dev ชนะ Conflict
+          echo "Attempting to merge origin/v2-dev into master, prioritizing v2-dev changes..."
+          git merge origin/v2-dev --no-ff --allow-unrelated-histories -X theirs
           
-      - name: Check for Merge Conflicts
+      - name: Check for Merge Conflicts (Should be empty now)
         id: check_conflict
         run: |
-          # ตรวจสอบว่ามีการ Conflict หรือไม่
+          # เนื่องจากเราใช้ -X theirs หากมี Conflict ในไฟล์ที่แก้ไขพร้อมกัน 
+          # Git ควรจะเลือกเวอร์ชัน 'theirs' (origin/v2-dev) โดยอัตโนมัติ
+          # เรายังคงตรวจสอบเพื่อความปลอดภัย
           if git diff --quiet; then
             echo "merge_status=success" >> $GITHUB_OUTPUT
           else
+            # หากยังมี Conflict หลงเหลืออยู่ (ซึ่งไม่ควรเกิดขึ้นหากไฟล์ไม่ได้ถูกลบ/เพิ่ม)
             echo "merge_status=conflict" >> $GITHUB_OUTPUT
-            echo "::error::Merge conflict detected when merging origin/v2-dev to master! Please resolve manually."
-            exit 1 # หยุดการทำงานหากมี Conflict
+            echo "::error::Unexpected conflict remaining after using -X theirs. Please check manually."
+            exit 1 
           fi
 
       - name: Push merged changes to master
