@@ -36,7 +36,7 @@ jobs:
           # 2. สั่ง Merge โดยดึงการเปลี่ยนแปลงจาก 'origin/v2-dev' (v2-dev ของคุณ) เข้ามาใน 'master'
           # ใช้ --no-ff เพื่อให้เกิด Merge Commit ชัดเจน
           echo "Attempting to merge origin/v2-dev into master..."
-          git merge origin/v2-dev --no-ff --allow-unrelated-histories
+          git merge origin/v2-dev --no-ff --allow-unrelated-histories || true
           
       - name: Check for Merge Conflicts
         id: check_conflict
