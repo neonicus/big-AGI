@@ -1,0 +1,43 @@
+name: 1. Auto Sync Upstream v2-dev to Your v2-dev
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # รันทุกวัน 00:00 UTC
+  workflow_dispatch:       # Manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # จำเป็นสำหรับการ push กลับไปยัง v2-dev ของคุณ
+
+    steps:
+      - name: Checkout your v2-dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: v2-dev # ตรวจสอบให้แน่ใจว่าเรากำลังทำงานบน 'v2-dev' ของเรา
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/enricoros/big-AGI.git
+
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Merge upstream/v2-dev into your v2-dev
+        run: |
+          git checkout v2-dev
+          
+          # ดึงการเปลี่ยนแปลงจากต้นทาง (upstream) เข้ามาใน v2-dev ของเรา
+          # ใช้ --no-ff เพื่อให้เกิด Merge Commit หรือใช้ rebase หากต้องการประวัติเส้นตรง
+          git merge upstream/v2-dev --no-ff
+          
+      - name: Push merged changes to your v2-dev
+        run: |
+          echo "Pushing merged changes to origin/v2-dev..."
+          git push origin v2-dev
