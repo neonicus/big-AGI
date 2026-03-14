@@ -57,6 +57,9 @@ export interface ChatActions {
   setArchived: (cId: DConversationId, isArchived: boolean) => void;
   title: (cId: DConversationId) => string | undefined;
 
+  // bulk import
+  importConversations: (conversations: DConversation[], overwrite: boolean) => void;
+
   // utility function
   _editConversation: (cId: DConversationId, update: Partial<DConversation> | ((conversation: DConversation) => Partial<DConversation>)) => void;
 }
@@ -84,6 +87,14 @@ export const useChatStore = create<ConversationsStore>()(/*devtools(*/
         workspaceActions().importAssignmentsFromMessages(workspaceForConversationIdentity(newConversation.id), newConversation.messages);
 
         return newConversation.id;
+      },
+
+      importConversations: (newConversations: DConversation[], overwrite: boolean) => {
+        _set(state => ({
+          conversations: overwrite
+            ? newConversations
+            : [...newConversations, ...state.conversations].filter((c, i, a) => a.findIndex(_c => _c.id === c.id) === i),
+        }));
       },
 
       /** Used by:

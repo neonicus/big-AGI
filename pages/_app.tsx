@@ -24,6 +24,7 @@ import { Is } from '~/common/util/pwaUtils';
 import { OverlaysInsert } from '~/common/layout/overlays/OverlaysInsert';
 import { ProviderBackendCapabilities } from '~/common/providers/ProviderBackendCapabilities';
 import { ProviderBootstrapLogic } from '~/common/providers/ProviderBootstrapLogic';
+import { ProviderCloudSync } from '~/common/providers/ProviderCloudSync';
 import { ProviderSingleTab } from '~/common/providers/ProviderSingleTab';
 import { ProviderTheming } from '~/common/providers/ProviderTheming';
 import { SnackbarInsert } from '~/common/components/snackbar/SnackbarInsert';
@@ -50,11 +51,13 @@ const Big_AGI_App = ({ Component, emotionCache, pageProps }: MyAppProps) => {
         <ProviderBackendCapabilities>
           {/* ^ Backend capabilities & SSR boundary */}
           <ErrorBoundary outer>
-            <ProviderBootstrapLogic>
-              <SnackbarInsert />
-              {getLayout(<Component {...pageProps} />)}
-              <OverlaysInsert />
-            </ProviderBootstrapLogic>
+            <ProviderCloudSync>
+              <ProviderBootstrapLogic>
+                <SnackbarInsert />
+                {getLayout(<Component {...pageProps} />)}
+                <OverlaysInsert />
+              </ProviderBootstrapLogic>
+            </ProviderCloudSync>
           </ErrorBoundary>
         </ProviderBackendCapabilities>
       </ProviderSingleTab>
