@@ -19,6 +19,7 @@ import { PopupPanel } from '../panel/PopupPanel';
 import { optimaActions, optimaOpenDrawer, optimaOpenPanel, optimaTogglePanel, useOptimaPanelOpen } from '../useOptima';
 import { useOptimaPortalHasInputs } from '../portals/useOptimaPortalHasInputs';
 import { useOptimaPortalOutRef } from '../portals/useOptimaPortalOutRef';
+import { UserProfileButton } from './UserProfileButton';
 
 
 // Center Items (Portal)
@@ -117,7 +118,10 @@ export function OptimaBar(props: { component: React.ElementType, currentApp?: Na
       {/* Pluggable Toolbar Items */}
       <CenterItemsPortal currentApp={props.currentApp} />
 
-      {/* We used to have the Preview (lightbulb) menu here */}
+      {/* User / Sync Status */}
+      <InvertedBarCornerItem>
+        <UserProfileButton />
+      </InvertedBarCornerItem>
 
       {/* Panel Open: has content always on Mobile (the app menu) */}
       {panelHasContent && (

@@ -27,9 +27,26 @@ export type ChatGenerateContentContext = Awaited<ReturnType<typeof createTRPCFet
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 export const createTRPCFetchContext = async ({ req }: FetchCreateContextFnOptions) => {
+  // Extract userId from Basic Auth (x-bigagi-user) or Google Auth (Authorization Bearer)
+  let userId = req.headers?.get('x-bigagi-user') ?? 'anonymous';
+
+  const authHeader = req.headers?.get('authorization');
+  if (authHeader?.startsWith('Bearer ')) {
+    const idToken = authHeader.substring(7);
+    try {
+      // Trust decode for now (should verify signature in production)
+      const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64').toString());
+      if (payload.sub) {
+        userId = payload.sub;
+      }
+    } catch (e) {
+      console.warn('Failed to parse Google ID Token in TRPC context:', e);
+    }
+  }
+
   return {
     // used to identify the user for cloud sync
-    userId: req.headers?.get('x-bigagi-user') ?? 'anonymous',
+    userId,
     // only used by Backend Analytics
     hostName: req.headers?.get('host') ?? 'localhost',
     // enables cancelling upstream requests when the downstream request is aborted

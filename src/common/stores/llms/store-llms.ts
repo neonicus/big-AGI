@@ -58,6 +58,7 @@ interface LlmsRootActions {
   setConfServiceId: (id: DModelsServiceId | null) => void;
 
   // special
+  setSources: (sources: DModelsService<any>[]) => void;
   setOpenRouterKey: (key: string) => void;
 
 }
@@ -402,6 +403,9 @@ export const useModelsStore = create<LlmsStore>()(persist(
 
     setConfServiceId: (id: DModelsServiceId | null) =>
       set({ confServiceId: id }),
+
+    setSources: (sources: DModelsService<any>[]) =>
+      set({ sources }),
 
     setOpenRouterKey: (key: string) =>
       set(state => {
