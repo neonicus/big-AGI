@@ -15,9 +15,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider = "sqlite"
 }
 
 //
@@ -60,4 +58,16 @@ enum LinkStorageVisibility {
 
 enum LinkStorageDataType {
   CHAT_V1
+}
+
+//
+// Storage of User state (Cloud Sync)
+//
+model UserSync {
+  userId    String   @id
+  syncData  Json
+  version   Int      @default(1)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -9,6 +9,7 @@ import MicIcon from '@mui/icons-material/Mic';
 import ScienceIcon from '@mui/icons-material/Science';
 import SearchIcon from '@mui/icons-material/Search';
 import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
+import SyncIcon from '@mui/icons-material/Sync';
 
 import { BrowseSettings } from '~/modules/browse/BrowseSettings';
 import { DallESettings } from '~/modules/t2i/dalle/DallESettings';
@@ -28,6 +29,7 @@ import { AppChatSettingsUI } from './settings-ui/AppChatSettingsUI';
 import { UxLabsSettings } from './UxLabsSettings';
 import { VoiceInSettings } from './VoiceInSettings';
 import { VoiceOutSettings } from './VoiceOutSettings';
+import { AppSettingsSync } from './AppSettingsSync';
 
 
 // configuration
@@ -250,6 +252,7 @@ export function SettingsModal(props: {
           <Tab value='voice' disableIndicator sx={_styles.tabsListTab}>Voice</Tab>
           <Tab value='draw' disableIndicator sx={_styles.tabsListTab}>Draw</Tab>
           <Tab value='tools' disableIndicator sx={_styles.tabsListTab}>Tools</Tab>
+          <Tab value='sync' disableIndicator sx={_styles.tabsListTab}>Sync</Tab>
         </TabList>
 
         <TabPanel value='chat' color='primary' variant='outlined' sx={_styles.tabPanel}>
@@ -339,6 +342,10 @@ export function SettingsModal(props: {
             </Topic>
             {/*<Topic icon='🛠' title='Other tools...' />*/}
           </Topics>
+        </TabPanel>
+
+        <TabPanel value='sync' color='primary' variant='outlined' sx={_styles.tabPanel}>
+          <AppSettingsSync />
         </TabPanel>
       </Tabs>
 

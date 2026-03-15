@@ -57,11 +57,13 @@ export const apiQuery = createTRPCNext<AppRouterEdge>({
           url: `${getBaseUrl()}/api/edge`,
           transformer: transformer,
           // You can pass any HTTP headers you wish here
-          // async headers() {
-          //   return {
-          //     // authorization: getAuthCookie(),
-          //   };
-          // },
+          async headers() {
+            const { getAuthToken } = await import('~/common/stores/store-auth');
+            const token = getAuthToken();
+            return {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            };
+          },
         }),
       ],
     };

@@ -27,14 +27,21 @@ export function middleware(request: NextRequest) {
   const base64Credentials = authHeader.split(' ')[1];
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
   const [username, password] = credentials.split(':');
-  if (
-    !username || !password ||
+  if (!username || !password ||
     username !== process.env.HTTP_BASIC_AUTH_USERNAME ||
     password !== process.env.HTTP_BASIC_AUTH_PASSWORD
   )
     return new Response('Unauthorized', unauthResponse);
 
-  return NextResponse.next();
+  // Pass the username to the request headers for tRPC context
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-bigagi-user', username);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 
